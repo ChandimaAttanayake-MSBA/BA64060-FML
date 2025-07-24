@@ -1,0 +1,154 @@
+---
+title: "FML-Assignment 1"
+author: "Chandima Attanayake"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+## 01. Conduct Basic Descriptive Statistics
+```{r}
+
+# Load necessary libraries
+
+library(dplyr)     # For data manipulation
+library(psych)     # For psychological and descriptive statistics
+library(readr)     # For efficient data import and export
+library(tidyverse) # A collection of packages including dplyr, ggplot2, and more
+
+
+# Load the data
+data <- read.csv("//Users/chandimaattanayake/Downloads/Churn.csv")
+
+# View basic descriptive statistics
+
+
+head(data)    # View the head of the data (first few rows)
+tail(data)    # View the tail of the data (last few rows)
+dim(data)     # Check the dimensions of the dataset (number of rows and columns)
+summary(data) # Get a summary of the dataset (min, max, median, etc.)
+# Check the structure of the dataset (data types, number of factors, etc.)
+str(data)
+
+# Calculate the mean for numerical variables (excluding NA values)
+means <- sapply(data, function(x) if(is.numeric(x)) mean(x, na.rm=TRUE))
+
+# Calculate the median for numerical variables
+medians <- sapply(data, function(x) if(is.numeric(x)) median(x, na.rm=TRUE))
+
+# Define a function to calculate the mode
+get_mode <- function(x) {
+  uniq_vals <- unique(x)
+  uniq_vals[which.max(tabulate(match(x, uniq_vals)))]
+}
+
+
+modes <- sapply(data, get_mode) # Calculate the mode for each variable
+
+missing_values <- sapply(data, function(x) sum(is.na(x))) # Check for any missing values in the dataset
+
+
+# Print the results
+print("Means:")
+print(means)
+
+print("Medians:")
+print(medians)
+
+print("Modes:")
+print(modes)
+
+print("Missing Values:")
+print(missing_values)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 02. Interpretation of Descriptive Statistics (in R Markdown)
+
+## Overview
+
+Upon the descritptive analysis, following observations were noted.
+
+- The dataset includes 1000 records with nine variables
+
+**call failure** On average, customers experience about 10 call failures. The most common number of call failures reported is 9 with the mean and median both indicating a high frequency of issues.Therefore, the process related to this service should be revisted. 
+
+**Subscription Length** The average subscription length is approximately 12 months, which aligns with the median and mode. This indicates that most customers have a subscription period of around one year.
+
+**Data Usage** Customers use an average of 5.10 GB of data per month. The mode of 4.19 GB suggests that a significant portion of customers use around this amount, even though the the average is slightly higher.
+
+**Voice Minutes** The average voice usage is about 2565 minutes, however the highest one is 4836 minutes and this indicates a wide range in voice usage among customers.
+
+**Customer Support Calls** On average, customers make approximately 2.39 support calls. However, majority of customers do not contact support at all, as evidenced by the mode being 0.
+
+**Monthly Charges** The average monthly charge is about $58.42, with a median of $56.91. The mode of $24.27 suggests that this charge is common among customers, indicating possible tiered pricing.
+
+**Roaming Usage** The average roaming usage is around 5 GB per month, with the most common usage being 2.60 GB. This suggests that while most customers use less roaming data, a few use significantly more.
+
+**Churn** The churn rate is 50%, indicating that roughly half of the customers have churned. The mode of 1 highlights that churn is a common outcome for customers.
+
+**Missing Values** There are no missing values and data set is ready for further analysis 
+
+
+## 03. Select and Compare Two or More Variables
+
+```{r}
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Select two variables: Data Usage and Churn
+selected_data <- dplyr::select(data, DataUsage, Churn)
+
+# Create a summary table for these variables
+summary(selected_data)
+
+# Calculate the mean Data Usage for customers who churned vs those who did not
+churned_vs_not <- selected_data %>% group_by(Churn) %>% summarize(mean_usage = mean(DataUsage, na.rm=TRUE))
+
+# Display the summary table
+print(churned_vs_not)
+
+# Create a simple visualization to compare
+library(ggplot2)
+ggplot(selected_data, aes(x = as.factor(Churn), y = DataUsage)) + 
+  geom_boxplot() + 
+  labs(x = "Churn", y = "Data Usage") + 
+  ggtitle("Data Usage vs Churn")
+
+# Check the structure of the dataset to ensure CHURN exists
+str(data)
+
+# Convert CHURN to a factor if it's not already one
+data$Churn <- as.factor(data$Churn)
+
+# Check if the conversion worked
+str(data)
+
+```
+
+## 4. Transform a Variable and Generate a Plot Using ggplot
+
+```{r}
+
+# Load necessary libraries
+library(ggplot2)
+
+# Transform the Data Usage variable using log transformation
+data$log_dataUsage <- log(data$DataUsage + 1)  # Adding 1 to avoid log(0)
+
+# Plot the transformed variable using ggplot
+ggplot(data, aes(x = log_dataUsage)) +  # Changed to plot the transformed variable
+  geom_histogram(bins = 30, fill = "blue", color = "black") + 
+  labs(x = "Log of Data Usage", y = "Count") + 
+  ggtitle("Distribution of Log-Transformed Data Usage")
+
+# Check the structure of the dataset to ensure the variable is created
+str(data)
+
+```
